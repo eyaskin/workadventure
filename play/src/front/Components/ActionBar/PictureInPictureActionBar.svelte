@@ -15,6 +15,7 @@
     import MicrophoneMenuItem from "./MenuIcons/MicrophoneMenuItem.svelte";
     import ScreenSharingMenuItem from "./MenuIcons/ScreenSharingMenuItem.svelte";
     import ChatMenuItem from "./MenuIcons/ChatMenuItem.svelte";
+	import { DISABLE_CAMERA } from "../../Enum/EnvironmentVariable";
 
     const dispatch = createEventDispatcher<{
         screenSharingClick: void;
@@ -42,23 +43,25 @@
                     <ChatMenuItem on:click={toggleChat} last={true} />
                 </div>
                 <div>
-                    <!-- ACTION WRAPPER : CAM & MIC -->
-                    <div class="group/hardware flex items-center relative">
-                        {#if !$inExternalServiceStore && !$silentStore && $proximityMeetingStore && $myMicrophoneStore}
-                            <MicrophoneMenuItem />
-                        {/if}
-                        <!-- NAV : CAMERA START -->
-                        {#if !$inExternalServiceStore && $myCameraStore && !$silentStore}
-                            <CameraMenuItem />
-                        {/if}
-                        <!-- NAV : CAMERA END -->
+					<!-- ACTION WRAPPER : CAM & MIC -->
+					{#if !DISABLE_CAMERA}
+						<div class="group/hardware flex items-center relative">
+							{#if !$inExternalServiceStore && !$silentStore && $proximityMeetingStore && $myMicrophoneStore}
+								<MicrophoneMenuItem />
+							{/if}
+							<!-- NAV : CAMERA START -->
+							{#if !$inExternalServiceStore && $myCameraStore && !$silentStore}
+								<CameraMenuItem />
+							{/if}
+							<!-- NAV : CAMERA END -->
 
-                        <!-- NAV : SCREENSHARING START -->
-                        {#if $bottomActionBarVisibilityStore}
-                            <ScreenSharingMenuItem on:click={toggleScreensharing} />
-                        {/if}
-                        <!-- NAV : SCREENSHARING END -->
-                    </div>
+							<!-- NAV : SCREENSHARING START -->
+							{#if $bottomActionBarVisibilityStore}
+								<ScreenSharingMenuItem on:click={toggleScreensharing} />
+							{/if}
+							<!-- NAV : SCREENSHARING END -->
+						</div>
+					{/if}
                 </div>
             </div>
         </div>

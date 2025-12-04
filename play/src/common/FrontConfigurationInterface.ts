@@ -11,6 +11,9 @@ export interface FrontConfigurationInterface {
     STUN_SERVER: string | undefined;
     TURN_SERVER: string | undefined;
     SKIP_RENDER_OPTIMIZATIONS: boolean;
+    DISABLE_CAMERA?: boolean;
+    ENABLE_DEMO_NPCS?: boolean;
+    ENABLE_OPENAI_DIALOGUE?: boolean;
     DISABLE_NOTIFICATIONS: boolean;
     TURN_USER: string | undefined;
     TURN_PASSWORD: string | undefined;

@@ -101,6 +101,9 @@ Note that anonymous players don't have any TTL limit because their data is store
         .or(z.string().max(0))
         .transform((val) => toNumber(val, 4))
         .describe("The maximum number of users for WebRTC."),
+    ENABLE_OPENAI_DIALOGUE: BoolAsString.optional().transform((val) => toBool(val, false)),
+    OPENAI_API_KEY: z.string().optional(),
+    OPENAI_MODEL: z.string().optional(),
 });
 
 export type EnvironmentVariables = z.infer<typeof EnvironmentVariables>;

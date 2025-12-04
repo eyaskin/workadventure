@@ -17,6 +17,7 @@ import {
 import { PingController } from "./Controller/PingController";
 import { spaceManager } from "./SpaceManager";
 import { setCapabilities } from "./Services/Capabilities";
+import { DialogueController } from "./Controller/DialogueController";
 
 const sharedAdminApi = new SharedAdminApi(ADMIN_API_RETRY_DELAY, ADMIN_API_URL);
 class App {
@@ -31,6 +32,24 @@ class App {
         this.app = express();
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
+        // Basic CORS for local dev (allow Play frontend)
+        this.app.use((req, res, next) => {
+            const origin = req.headers.origin;
+            const allowedOrigin = "http://play.workadventure.localhost";
+            if (origin === allowedOrigin) {
+                res.header("Access-Control-Allow-Origin", origin);
+            } else {
+                res.header("Access-Control-Allow-Origin", allowedOrigin);
+            }
+            res.header("Vary", "Origin");
+            res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+            res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+            if (req.method === "OPTIONS") {
+                res.sendStatus(204);
+                return;
+            }
+            next();
+        });
 
         // Création de l'application Prometheus si nécessaire
         if (PROMETHEUS_PORT) {
@@ -43,6 +62,8 @@ class App {
         }
 
         this.debugController = new DebugController(this.app);
+        // OpenAI-powered dialogue (optional)
+        new DialogueController(this.app);
         this.pingController = new PingController(this.app);
     }
 

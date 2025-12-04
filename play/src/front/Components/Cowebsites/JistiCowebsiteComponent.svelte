@@ -18,6 +18,7 @@
     import { inExternalServiceStore } from "../../Stores/MyMediaStore";
     import { gameManager } from "../../Phaser/Game/GameManager";
     import { coWebsites } from "../../Stores/CoWebsiteStore";
+    import { setJitsiApi } from "../../WebRtc/JitsiChatBridge";
 
     const debug = Debug("jitsiCowebsite");
 
@@ -137,6 +138,7 @@
                     };
 
                     jitsiApi = new window.JitsiMeetExternalAPI(new URL(domain).host, options);
+                    setJitsiApi(jitsiApi);
 
                     jitsiApi.addListener("videoConferenceJoined", onVideoConferenceJoined);
 
@@ -186,6 +188,7 @@
             jitsiApi.removeListener("videoConferenceLeft", onVideoConferenceLeft);
             jitsiApi.removeListener("readyToClose", onReadyToClose);
             jitsiApi.dispose();
+            setJitsiApi(undefined);
         }
 
         if (screenWakeRelease) {

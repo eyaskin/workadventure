@@ -104,6 +104,7 @@ import type { WasCameraUpdatedEvent } from "../../Api/Events/WasCameraUpdatedEve
 import { audioManagerFileStore, bubbleSoundStore } from "../../Stores/AudioManagerStore";
 import { currentPlayerGroupLockStateStore } from "../../Stores/CurrentPlayerGroupStore";
 import { errorScreenStore } from "../../Stores/ErrorScreenStore";
+import { motivationPercentStore } from "../../Stores/MotivationStore";
 import {
     availabilityStatusStore,
     batchGetUserMediaStore,
@@ -336,6 +337,15 @@ export class GameScene extends DirtyScene {
     private jitsiDominantSpeaker = false;
     private jitsiParticipantsCount = 0;
     private cleanupDone = false;
+    // UI: Motivation badge under the current player
+    private motivationUi:
+        | {
+              container: Phaser.GameObjects.Container;
+              bg: Phaser.GameObjects.Rectangle;
+              text: Phaser.GameObjects.Text;
+              unsub: Unsubscriber;
+          }
+        | undefined;
     private playersEventDispatcher = new IframeEventDispatcher();
     private playersMovementEventDispatcher = new IframeEventDispatcher();
     private remotePlayersRepository = new RemotePlayersRepository();
@@ -798,6 +808,53 @@ export class GameScene extends DirtyScene {
             }
         });
 
+        // Spawn demo NPCs (click to talk) if enabled via env
+        import("../../Enum/EnvironmentVariable")
+            .then(({ ENABLE_DEMO_NPCS }) => {
+                if (!ENABLE_DEMO_NPCS) return;
+                return import("../Entity/Npc").then(({ Npc }) => {
+                    const start = this.startPositionCalculator.startPosition;
+                    const positions = [
+                        { x: start.x + 250, y: start.y + 100 },
+                        { x: start.x + 150, y: start.y - 150 },
+                        { x: start.x + 400, y: start.y - 100 },
+                    ];
+                    const names = ["Simone", "Marisa", "Arielle"];
+                    const messages = [
+                        [
+                            "I started broad on motivation, then focused on attrition.",
+                            "Attrition is the flip side of motivation—when needs aren’t met, people leave.",
+                            "Student data shows unpaid tuition → ~86.6% dropout; married → ~47.2% vs 30.2%.",
+                            "Older learners (25+) face higher risk; not random—system barriers matter.",
+                        ],
+                        [
+                            "At work, low satisfaction and overtime predict turnover.",
+                            "Years at company and role fit shape retention.",
+                            "I’m building visuals so HR can spot motivation gaps quickly.",
+                            "Goal: turn metrics into action—reduce friction, raise support.",
+                        ],
+                        [
+                            "Project aims: blend data, design, and psychology for impact.",
+                            "Next: refine nav, tables/filters, and form flows for clarity.",
+                            "Design outputs: dashboards, infographics, simple simulation.",
+                            "With mentoring, we’ll iterate toward actionable solutions.",
+                        ],
+                    ];
+                    for (let i = 0; i < positions.length; i++) {
+                        const npc = new Npc(
+                            this,
+                            positions[i].x,
+                            positions[i].y,
+                            this.currentPlayerTexturesPromise,
+                            names[i],
+                            messages[i]
+                        );
+                        this.add.existing(npc);
+                    }
+                });
+            })
+            .catch((e) => console.warn("Failed to spawn demo NPCs", e));
+
         this.activatablesManager = new ActivatablesManager(this.CurrentPlayer);
 
         biggestAvailableAreaStore.recompute();
@@ -1186,6 +1243,13 @@ export class GameScene extends DirtyScene {
             clearTimeout(this.hideTimeout);
             this.hideTimeout = undefined;
         }
+        if (this.motivationUi) {
+            this.motivationUi.unsub?.();
+            this.motivationUi.text.destroy();
+            this.motivationUi.bg.destroy();
+            this.motivationUi.container.destroy();
+            this.motivationUi = undefined;
+        }
     }
 
     /**
@@ -1301,6 +1365,47 @@ export class GameScene extends DirtyScene {
             }
         }
         this.hasMovedThisFrame = false;
+
+        // Create/update motivation badge under the player
+        if (this.CurrentPlayer && !this.motivationUi) {
+            const container = this.add.container(this.CurrentPlayer.x, this.CurrentPlayer.y + 28);
+            const bg = this.add
+                .rectangle(0, 0, 120, 18, 0x0f172a, 0.8)
+                .setOrigin(0.5, 0)
+                .setStrokeStyle(1, 0x374151, 0.8);
+            const text = this.add
+                .text(0, 2, "Motivation 0%", {
+                    fontSize: "11px",
+                    color: "#e5e7eb",
+                })
+                .setOrigin(0.5, 0);
+            container.add([bg, text]);
+            container.setDepth(10_000);
+
+            const unsub = motivationPercentStore.subscribe((p) => {
+                const label = `Motivation ${p}%`;
+                text.setText(label);
+                // Resize background to fit text with padding
+                const width = Math.max(90, text.width + 20);
+                bg.width = width;
+                
+                // Color code based on motivation level
+                let color: string;
+                if (p < 33) {
+                    color = "#ef4444"; // Red for low motivation
+                } else if (p < 67) {
+                    color = "#f59e0b"; // Yellow/Orange for medium motivation
+                } else {
+                    color = "#10b981"; // Green for high motivation
+                }
+                text.setColor(color);
+            });
+
+            this.motivationUi = { container, bg, text, unsub };
+        }
+        if (this.motivationUi && this.CurrentPlayer) {
+            this.motivationUi.container.setPosition(this.CurrentPlayer.x, this.CurrentPlayer.y + 28);
+        }
     }
 
     deleteGroup(groupId: number): void {
@@ -3410,6 +3515,32 @@ ${escapedMessage}
                 false,
                 this.currentCompanionTexturePromise
             );
+            // Register player speaker for dialogue choices bubble (no await in non-async fn)
+            import("../../Dialogue/DialogueStore")
+                .then(({ setPlayerSpeaker, setPlayerChoicesRenderer, choose }) => {
+                    return import("@workadventure/messages").then(({ SayMessageType }) => {
+                        setPlayerSpeaker((text: string) => {
+                            // empty text clears the bubble
+                            this.CurrentPlayer.say(text, SayMessageType.SpeechBubble);
+                        });
+                        // Disable in-world choice bubbles; choices are shown in bottom overlay
+                        setPlayerChoicesRenderer((node) => {
+                            // Access _choiceBubbles via bracket notation to avoid TypeScript errors
+                            const choiceBubbles = (this as unknown as { _choiceBubbles?: Phaser.GameObjects.Container[] })._choiceBubbles;
+                            if (choiceBubbles) {
+                                for (const b of choiceBubbles) {
+                                    b.destroy();
+                                }
+                            }
+                            (this as unknown as { _choiceBubbles: Phaser.GameObjects.Container[] })._choiceBubbles = [];
+                            // No in-world rendering; bottom DialogueOverlay will handle options
+                            return;
+                        });
+                    });
+                })
+                .catch((e) => {
+                    console.warn("Could not register player speaker", e);
+                });
             this.CurrentPlayer.on(Phaser.Input.Events.POINTER_OVER, (pointer: Phaser.Input.Pointer) => {
                 this.CurrentPlayer.pointerOverOutline(0x365dff);
             });

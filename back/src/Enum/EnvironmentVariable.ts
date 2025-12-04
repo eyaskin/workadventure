@@ -73,3 +73,6 @@ export const LIVEKIT_API_KEY = env.LIVEKIT_API_KEY;
 export const LIVEKIT_API_SECRET = env.LIVEKIT_API_SECRET;
 
 export const MAX_USERS_FOR_WEBRTC = env.MAX_USERS_FOR_WEBRTC;
+export const ENABLE_OPENAI_DIALOGUE = env.ENABLE_OPENAI_DIALOGUE;
+export const OPENAI_API_KEY = env.OPENAI_API_KEY;
+export const OPENAI_MODEL = env.OPENAI_MODEL || "gpt-4o-mini";

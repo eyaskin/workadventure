@@ -13,7 +13,7 @@ import {
 } from "../../Stores/MediaStore";
 import { menuIconVisiblilityStore, userIsConnected } from "../../Stores/MenuStore";
 import { EnableCameraSceneName } from "../Login/EnableCameraScene";
-import { LoginSceneName } from "../Login/LoginScene";
+// LoginSceneName removed - not used in this version
 import { SelectCharacterSceneName } from "../Login/SelectCharacterScene";
 import { EmptySceneName } from "../Login/EmptyScene";
 import { gameSceneIsLoadedStore, waitForGameSceneStore } from "../../Stores/GameSceneStore";
@@ -80,10 +80,11 @@ export class GameManager {
         console.info("Preferred audio input device: " + preferredAudioInputDeviceId);
         console.info("Preferred video input device: " + preferredVideoInputDeviceId);
 
-        //If player name was not set show login scene with player name
-        //If Room si not public and Auth was not set, show login scene to authenticate user (OpenID - SSO - Anonymous)
+        // If player name was not set show an intro scene before the login.
+        // If Room is not public and Auth was not set, also show intro first.
         if (!this.playerName || (this.startRoom.authenticationMandatory && !localUserStore.getAuthToken())) {
-            return LoginSceneName;
+            // Route to Intro first; Intro scene will continue to Login
+            return "IntroScene";
         } else if (result.nextScene === "selectCharacterScene") {
             return SelectCharacterSceneName;
         } else if (result.nextScene === "selectCompanionScene") {

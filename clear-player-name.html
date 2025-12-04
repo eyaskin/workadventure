@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Player Name</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #22c55e; }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        button {
+            background: #22c55e;
+            color: #062a14;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        button:hover { filter: brightness(1.1); }
+    </style>
+</head>
+<body>
+    <h1>Reset Game Data</h1>
+    <p id="status">Click the button below to clear your player name, demographics (pronouns, marital status, etc.), and restart the game from the beginning.</p>
+    <button onclick="clearName()">Reset All Data</button>
+    <script>
+        function clearName() {
+            try {
+                // Clear player name
+                localStorage.removeItem('playerName');
+                // Clear demographics (includes pronouns, marital status, gender, age, etc.)
+                localStorage.removeItem('wa-demographics');
+                // Clear any task progress
+                localStorage.removeItem('todoListStore');
+                // Clear motivation score (if stored)
+                // Note: This will reset when the game restarts anyway
+                
+                document.getElementById('status').innerHTML = '<span class="success">✓ All game data cleared!</span><br><br>Your player name, pronouns, demographics, and progress have been reset.<br><br><strong>Now refresh your game page</strong> to start fresh with the intro scene and demographics form.';
+                document.getElementById('status').classList.add('success');
+            } catch (e) {
+                document.getElementById('status').innerHTML = '<span class="error">Error: ' + e.message + '</span><br><br>Try using the browser\'s Application/Storage tab instead.';
+                document.getElementById('status').classList.add('error');
+            }
+        }
+        
+        // Auto-clear on load if URL has ?clear parameter
+        if (window.location.search.includes('clear')) {
+            clearName();
+        }
+    </script>
+</body>
+</html>
+

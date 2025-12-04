@@ -27,6 +27,7 @@
     import CamOnIcon from "../Icons/CamOnIcon.svelte";
     import MicOnIcon from "../Icons/MicOnIcon.svelte";
     import HeadphonesIcon from "../Icons/HeadphonesIcon.svelte";
+	import { DISABLE_CAMERA } from "../../Enum/EnvironmentVariable";
 
     export let mediaSettingsDisplayed = false;
 
@@ -60,10 +61,11 @@
         }
     }
 
-    function openEnableCameraScene() {
-        enableCameraSceneVisibilityStore.showEnableCameraScene();
-        gameManager.leaveGame(EnableCameraSceneName, new EnableCameraScene());
-    }
+	function openEnableCameraScene() {
+		if (DISABLE_CAMERA) return;
+		enableCameraSceneVisibilityStore.showEnableCameraScene();
+		gameManager.leaveGame(EnableCameraSceneName, new EnableCameraScene());
+	}
 
     function microphoneClick(): void {
         if ($silentStore) return;
@@ -81,7 +83,7 @@
     use:clickOutside={() => dispatch("close")}
 >
     <div class="flex flex-col overflow-auto gap-2 p-1" style="max-height: calc(100vh - 160px);">
-        {#if $silentStore == false && $requestedCameraState && $cameraListStore && $cameraListStore.length > 0}
+	{#if !DISABLE_CAMERA && $silentStore == false && $requestedCameraState && $cameraListStore && $cameraListStore.length > 0}
             <div class="flex flex-col gap-1">
                 <div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-1 relative bold">
                     {$LL.actionbar.subtitle.camera()}
@@ -127,7 +129,7 @@
                     </div>
                 {/each}
             </div>
-        {:else}
+	{:else if !DISABLE_CAMERA}
             <div class="">
                 <div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-2 relative bold">
                     {$LL.actionbar.subtitle.camera()}
@@ -141,7 +143,7 @@
                         {/if}
                     </div>
                 </div>
-                {#if $silentStore == false && $requestedCameraState == false}
+				{#if $silentStore == false && $requestedCameraState == false}
                     <div class="group flex items-center relative z-10 py-1 px-2 overflow-hidden">
                         <button
                             class="btn btn-danger btn-sm w-full justify-center"
@@ -154,10 +156,20 @@
                 {/if}
             </div>
         {/if}
+		{#if DISABLE_CAMERA}
+			<div class="">
+				<div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-2 relative bold">
+					{$LL.actionbar.subtitle.camera()}
+				</div>
+				<div class="group flex items-center relative z-10 px-2 font-sm justify-center">
+					<div class="text-sm italic">Media disabled by configuration</div>
+				</div>
+			</div>
+		{/if}
         <div class="w-full z-10 flex items-center">
             <div class="bg-white/10 w-full h-[1px]" />
         </div>
-        {#if $silentStore == false && $requestedMicrophoneState && $microphoneListStore && $microphoneListStore.length > 0}
+		{#if !DISABLE_CAMERA && $silentStore == false && $requestedMicrophoneState && $microphoneListStore && $microphoneListStore.length > 0}
             <div class="flex flex-col gap-1">
                 <div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-1 relative bold">
                     {$LL.actionbar.subtitle.microphone()}
@@ -202,7 +214,7 @@
                     </div>
                 {/each}
             </div>
-        {:else}
+		{:else if !DISABLE_CAMERA}
             <div class="flex flex-col gap-1">
                 <div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-1 relative bold">
                     {$LL.actionbar.subtitle.microphone()}
@@ -216,7 +228,7 @@
                         {/if}
                     </div>
                 </div>
-                {#if $silentStore == false && $requestedMicrophoneState == false}
+				{#if $silentStore == false && $requestedMicrophoneState == false}
                     <div class="group flex items-center relative z-10 px-2 overflow-hidden">
                         <button
                             class="btn btn-danger btn-sm w-full justify-center"
@@ -229,6 +241,16 @@
                 {/if}
             </div>
         {/if}
+		{#if DISABLE_CAMERA}
+			<div class="flex flex-col gap-1">
+				<div class="flex text-xxs uppercase text-white/50 px-2 pb-0.5 pt-1 relative bold">
+					{$LL.actionbar.subtitle.microphone()}
+				</div>
+				<div class="cursor-pointer group flex items-center relative z-10 py-1 px-2 font-sm justify-center">
+					<div class="text-sm italic">Media disabled by configuration</div>
+				</div>
+			</div>
+		{/if}
         <div class="w-full z-10 flex items-center">
             <div class="bg-white/10 w-full h-[1px]" />
         </div>
@@ -294,10 +316,12 @@
         {/if}
     </div>
     <div class="relative z-10 flex gap-2 p-2 bg-contrast/50">
-        <button
-            class="btn btn-sm btn-ghost btn-light justify-center w-full rounded text-nowrap"
-            on:click={openEnableCameraScene}>{$LL.actionbar.test()}</button
-        >
+	{#if !DISABLE_CAMERA}
+		<button
+			class="btn btn-sm btn-ghost btn-light justify-center w-full rounded text-nowrap"
+			on:click={openEnableCameraScene}>{$LL.actionbar.test()}</button
+		>
+	{/if}
         <button
             class="btn btn-sm btn-border btn-light justify-center w-full cursor-pointer rounded"
             on:click|stopPropagation|preventDefault={() => dispatch("close")}

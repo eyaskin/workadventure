@@ -3,6 +3,7 @@
     import { writable, get } from "svelte/store";
     import { onMount } from "svelte";
     import { isTodoListVisibleStore, todoListsStore } from "../../Stores/TodoListStore";
+    import { lastCompleted } from "../../Stores/ManagerTasks";
     import LL from "../../../i18n/i18n-svelte";
     import todoListPng from "../images/applications/todolist.png";
     import taskPng from "../images/applications/task.png";
@@ -40,6 +41,18 @@
         if ($todoListsStore.size === 1) {
             openTodoList([...$todoListsStore.values()].at(0)!.id);
         }
+        // When a task gets completed, auto-open the list and reveal completed section
+        const unsubscribe = lastCompleted.subscribe((payload) => {
+            if (!payload) return;
+            const { listId } = payload;
+            if (!$totoListOpenedId.has(listId)) {
+                $totoListOpenedId.add(listId);
+                totoListOpenedId.set(new Set($totoListOpenedId));
+            }
+            todoTaskCompletedOpened = true;
+            isTodoListVisibleStore.set(true);
+        });
+        return () => unsubscribe();
     });
 </script>
 

@@ -205,6 +205,8 @@ export const EnvironmentVariables = z.object({
     STUN_SERVER: z.string().optional(),
     TURN_SERVER: z.string().optional(),
     SKIP_RENDER_OPTIMIZATIONS: BoolAsString.optional().transform((val) => toBool(val, false)),
+    DISABLE_CAMERA: BoolAsString.optional().transform((val) => toBool(val, false)),
+    ENABLE_DEMO_NPCS: BoolAsString.optional().transform((val) => toBool(val, false)),
     DISABLE_NOTIFICATIONS: BoolAsString.optional().transform((val) => toBool(val, false)),
     TURN_USER: z.string().optional(),
     TURN_PASSWORD: z.string().optional(),
@@ -292,6 +294,7 @@ export const EnvironmentVariables = z.object({
         .or(z.string().max(0))
         .transform((val) => toNumber(val, 20 * 1024 * 1024)) // Default to 20 MB
         .describe("The maximum size of a gRPC message. Defaults to 20 MB."),
+    ENABLE_OPENAI_DIALOGUE: BoolAsString.optional().transform((val) => toBool(val, false)),
 });
 
 export type EnvironmentVariables = z.infer<typeof EnvironmentVariables>;

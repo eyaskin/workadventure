@@ -33,6 +33,7 @@
     import CloseChatMenuItem from "./MenuIcons/CloseChatMenuItem.svelte";
     import SilentBlock from "./SilentBlock.svelte";
     import { IconArrowDown } from "@wa-icons";
+	import { DISABLE_CAMERA } from "../../Enum/EnvironmentVariable";
 
     let rightDiv: HTMLDivElement;
     let mediaSettingsDisplayed = false;
@@ -103,107 +104,109 @@
                     <ContextualMenuItems />
                 </div>
 
-                <div>
-                    <!-- ACTION WRAPPER : CAM & MIC -->
-                    <div class="group/hardware flex items-center relative">
-                        {#if !$inExternalServiceStore && $proximityMeetingStore && $myMicrophoneStore}
-                            <MicrophoneMenuItem />
-                        {/if}
+				{#if !DISABLE_CAMERA}
+					<div>
+						<!-- ACTION WRAPPER : CAM & MIC -->
+						<div class="group/hardware flex items-center relative">
+							{#if !$inExternalServiceStore && $proximityMeetingStore && $myMicrophoneStore}
+								<MicrophoneMenuItem />
+							{/if}
 
-                        {#if smallArrowVisible}
-                            <div
-                                class="absolute h-3 mobile:h-6 w-7 rounded-b mobile:rounded-t bg-contrast/80 backdrop-blur start-[2.86rem] m-auto p-1 z-10 transition-all -bottom-3 hidden opacity-0 sm:block mobile:-top-12 mobile:block mobile:opacity-100
-                                {mediaSettingsDisplayed ? 'opacity-100' : 'group-hover/hardware:opacity-100'}"
-                            >
-                                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                                <div
-                                    class="absolute bottom-1 start-0 end-0 m-auto hover:bg-white/10 h-5 w-5 flex items-center justify-center rounded-sm mobile:rotate-180"
-                                    on:click|stopPropagation|preventDefault={() =>
-                                        (mediaSettingsDisplayed = !mediaSettingsDisplayed)}
-                                >
-                                    <ChevronUpIcon
-                                        height="h-4"
-                                        width="w-4"
-                                        classList="aspect-square transition-all {mediaSettingsDisplayed
-                                            ? ''
-                                            : 'rotate-180'}"
-                                        strokeWidth="2"
-                                    />
-                                </div>
-                            </div>
-                        {/if}
-                        {#if mediaSettingsDisplayed}
-                            <MediaSettingsList on:close={() => (mediaSettingsDisplayed = false)} />
-                        {/if}
-                        <!-- NAV : CAMERA START -->
-                        {#if !$inExternalServiceStore && $myCameraStore}
-                            <CameraMenuItem />
-                        {/if}
-                        <!-- NAV : CAMERA END -->
+							{#if smallArrowVisible}
+								<div
+									class="absolute h-3 mobile:h-6 w-7 rounded-b mobile:rounded-t bg-contrast/80 backdrop-blur start-[2.86rem] m-auto p-1 z-10 transition-all -bottom-3 hidden opacity-0 sm:block mobile:-top-12 mobile:block mobile:opacity-100
+									{mediaSettingsDisplayed ? 'opacity-100' : 'group-hover/hardware:opacity-100'}"
+								>
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+									<div
+										class="absolute bottom-1 start-0 end-0 m-auto hover:bg-white/10 h-5 w-5 flex items-center justify-center rounded-sm mobile:rotate-180"
+										on:click|stopPropagation|preventDefault={() =>
+											(mediaSettingsDisplayed = !mediaSettingsDisplayed)}
+									>
+										<ChevronUpIcon
+											height="h-4"
+											width="w-4"
+											classList="aspect-square transition-all {mediaSettingsDisplayed
+												? ''
+												: 'rotate-180'}"
+											strokeWidth="2"
+										/>
+									</div>
+								</div>
+							{/if}
+							{#if mediaSettingsDisplayed}
+								<MediaSettingsList on:close={() => (mediaSettingsDisplayed = false)} />
+							{/if}
+							<!-- NAV : CAMERA START -->
+							{#if !$inExternalServiceStore && $myCameraStore}
+								<CameraMenuItem />
+							{/if}
+							<!-- NAV : CAMERA END -->
 
-                        <!-- NAV : SCREENSHARING START -->
-                        <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        {#if $bottomActionBarVisibilityStore}
-                            <ScreenSharingMenuItem />
+							<!-- NAV : SCREENSHARING START -->
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							{#if $bottomActionBarVisibilityStore}
+								<ScreenSharingMenuItem />
+							
+								{#if camMenuIsDropped}
+									<div
+										class="absolute bottom-20 sm:end-20 sm:bottom-auto md:mt-2 md:top-14 @xl/actions:top-16 bg-contrast/80 backdrop-blur rounded-lg py-2 w-56 sm:start-24 text-white before:content-[''] before:absolute before:w-0 before:h-0 before:-top-[14px] before:end-6 before:border-solid before:border-8 before:border-transparent before:border-b-contrast/80 transition-all @md/actions:block max-h-[calc(100vh-96px)] overflow-y-auto"
+										transition:fly={{ y: 40, duration: 150 }}
+									>
+										<div class="p-0 m-0 list-none">
+											<button
+												class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
+												on:click={lightModeOn}
+											>
+												<div class="transition-all w-6 h-6 aspect-square text-center">
+													<ProfilIcon />
+												</div>
+												<div>{$LL.actionbar.lightMode()}</div>
+											</button>
+											<button
+												class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
+												on:click={focusModeOn}
+											>
+												<div class="transition-all w-6 h-6 aspect-square text-center">
+													<ProfilIcon />
+												</div>
+												<div>{$LL.actionbar.focusMode()}</div>
+											</button>
+											<button
+												class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
+												on:click={rightModeOn}
+											>
+												<div class="transition-all w-6 h-6 aspect-square text-center">
+													<ProfilIcon />
+												</div>
+												<div>{$LL.actionbar.rightMode()}</div>
+											</button>
+											{#if $highlightedEmbedScreen}
+												<button
+													class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
+													on:click={hideModeOn}
+												>
+													<div class="transition-all w-6 h-6 aspect-square text-center">
+														<ProfilIcon />
+													</div>
+													<div>{$LL.actionbar.hideMode()}</div>
+												</button>
+											{/if}
+										</div>
+										<div
+											class="flex justify-center hover:cursor-pointer"
+											on:click={() => (camMenuIsDropped = !camMenuIsDropped)}
+										>
+											<IconArrowDown />
+										</div>
+									</div>
+								{/if}
+							{/if}
 
-                            {#if camMenuIsDropped}
-                                <div
-                                    class="absolute bottom-20 sm:end-20 sm:bottom-auto md:mt-2 md:top-14 @xl/actions:top-16 bg-contrast/80 backdrop-blur rounded-lg py-2 w-56 sm:start-24 text-white before:content-[''] before:absolute before:w-0 before:h-0 before:-top-[14px] before:end-6 before:border-solid before:border-8 before:border-transparent before:border-b-contrast/80 transition-all @md/actions:block max-h-[calc(100vh-96px)] overflow-y-auto"
-                                    transition:fly={{ y: 40, duration: 150 }}
-                                >
-                                    <div class="p-0 m-0 list-none">
-                                        <button
-                                            class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
-                                            on:click={lightModeOn}
-                                        >
-                                            <div class="transition-all w-6 h-6 aspect-square text-center">
-                                                <ProfilIcon />
-                                            </div>
-                                            <div>{$LL.actionbar.lightMode()}</div>
-                                        </button>
-                                        <button
-                                            class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
-                                            on:click={focusModeOn}
-                                        >
-                                            <div class="transition-all w-6 h-6 aspect-square text-center">
-                                                <ProfilIcon />
-                                            </div>
-                                            <div>{$LL.actionbar.focusMode()}</div>
-                                        </button>
-                                        <button
-                                            class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
-                                            on:click={rightModeOn}
-                                        >
-                                            <div class="transition-all w-6 h-6 aspect-square text-center">
-                                                <ProfilIcon />
-                                            </div>
-                                            <div>{$LL.actionbar.rightMode()}</div>
-                                        </button>
-                                        {#if $highlightedEmbedScreen}
-                                            <button
-                                                class="group flex px-4 py-2 items-center hover:bg-white/10 transition-all cursor-pointer text-sm font-bold w-full"
-                                                on:click={hideModeOn}
-                                            >
-                                                <div class="transition-all w-6 h-6 aspect-square text-center">
-                                                    <ProfilIcon />
-                                                </div>
-                                                <div>{$LL.actionbar.hideMode()}</div>
-                                            </button>
-                                        {/if}
-                                    </div>
-                                    <div
-                                        class="flex justify-center hover:cursor-pointer"
-                                        on:click={() => (camMenuIsDropped = !camMenuIsDropped)}
-                                    >
-                                        <IconArrowDown />
-                                    </div>
-                                </div>
-                            {/if}
-                        {/if}
-
-                        <!-- NAV : SCREENSHARING END -->
-                    </div>
-                </div>
+							<!-- NAV : SCREENSHARING END -->
+						</div>
+					</div>
+				{/if}
             </div>
             <!-- NAV : SILENT BLOCK -->
             {#if $silentStore}

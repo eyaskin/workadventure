@@ -1,6 +1,7 @@
 import { get } from "svelte/store";
 import { requestedCameraState, requestedMicrophoneState, silentStore } from "../../Stores/MediaStore";
 import type { WorkAdventureDesktopApi } from "../../Interfaces/DesktopAppInterfaces";
+import { DISABLE_CAMERA } from "../../Enum/EnvironmentVariable";
 
 declare global {
     interface Window {
@@ -13,6 +14,11 @@ class DesktopApi {
 
     init() {
         if (!window?.WAD?.desktop) {
+            return;
+        }
+
+        if (DISABLE_CAMERA) {
+            // Ignore desktop camera/mic toggle hooks entirely when media is disabled
             return;
         }
 

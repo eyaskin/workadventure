@@ -71,7 +71,9 @@ services:
       STUN_SERVER: "$STUN_SERVER"
       TURN_SERVER: "$TURN_SERVER"
       DISABLE_NOTIFICATIONS: "$DISABLE_NOTIFICATIONS"
+      ENABLE_DEMO_NPCS: "$ENABLE_DEMO_NPCS"
       SKIP_RENDER_OPTIMIZATIONS: "$SKIP_RENDER_OPTIMIZATIONS"
+      DISABLE_CAMERA: "$DISABLE_CAMERA"
       # Use TURN_USER/TURN_PASSWORD if your Coturn server is secured via hard coded credentials.
       # Advice: you should instead use Coturn REST API along the TURN_STATIC_AUTH_SECRET in the Back container
       TURN_USER: ""
@@ -158,6 +160,7 @@ services:
       EMBEDLY_KEY: "$EMBEDLY_KEY"
       # Map editor restrictions (allow all users when OIDC is enabled by default)
       MAP_EDITOR_ALLOW_ALL_USERS: "false"
+      ENABLE_OPENAI_DIALOGUE: "$ENABLE_OPENAI_DIALOGUE"
     labels:
       - "traefik.enable=true"
 
@@ -234,8 +237,11 @@ services:
       PUBLIC_MAP_STORAGE_URL: "http://map-storage.workadventure.localhost"
       INTERNAL_MAP_STORAGE_URL: "http://map-storage:3000"
       PLAYER_VARIABLES_MAX_TTL: $PLAYER_VARIABLES_MAX_TTL
+      ENABLE_OPENAI_DIALOGUE: "$ENABLE_OPENAI_DIALOGUE"
       ENABLE_CHAT: "$ENABLE_CHAT"
       ENABLE_CHAT_UPLOAD: "$ENABLE_CHAT_UPLOAD"
+      OPENAI_API_KEY: "$OPENAI_API_KEY"
+      OPENAI_MODEL: "$OPENAI_MODEL"
       # Sentry integration
       SENTRY_DSN: $SENTRY_DSN_BACK
       SENTRY_ENVIRONMENT: $SENTRY_ENVIRONMENT

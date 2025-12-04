@@ -1,4 +1,4 @@
-name: Simple Build & Test
+name: Simple Build & Test (No Cache)
 
 on:
   push:
@@ -73,6 +73,5 @@ jobs:
           file: ${{ matrix.service }}/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/workadventure-${{ matrix.service }}:latest
-          cache-from: type=gha,scope=${{ github.workflow }}-${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ github.workflow }}-${{ matrix.service }}
+          # No cache to avoid artifact conflicts
 

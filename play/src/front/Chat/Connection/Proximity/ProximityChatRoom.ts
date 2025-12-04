@@ -21,17 +21,17 @@ import { iframeListener } from "../../../Api/IframeListener";
 import { SpaceInterface, SpaceUserExtended } from "../../../Space/SpaceInterface";
 import { SpaceRegistryInterface } from "../../../Space/SpaceRegistry/SpaceRegistryInterface";
 import { chatVisibilityStore } from "../../../Stores/ChatStore";
-import { isAChatRoomIsVisible, navChat, shouldRestoreChatStateStore } from "../../Stores/ChatStore";
+import { shouldRestoreChatStateStore } from "../../Stores/ChatStore";
 import { selectedRoomStore } from "../../Stores/SelectRoomStore";
 import { mapExtendedSpaceUserToChatUser } from "../../UserProvider/ChatUserMapper";
 import { bindMuteEventsToSpace } from "../../../Space/Utils/BindMuteEvents";
 import { gameManager } from "../../../Phaser/Game/GameManager";
-import { availabilityStatusStore, requestedCameraState, requestedMicrophoneState } from "../../../Stores/MediaStore";
+// Removed unused imports: availabilityStatusStore, requestedCameraState, requestedMicrophoneState
 import { localUserStore } from "../../../Connection/LocalUserStore";
 import { MessageNotification } from "../../../Notification/MessageNotification";
 import { notificationManager } from "../../../Notification/NotificationManager";
 import { blackListManager } from "../../../WebRtc/BlackListManager";
-import { isMediaBreakpointUp } from "../../../Utils/BreakpointsUtils";
+// Removed unused import: isMediaBreakpointUp
 import { ScriptingOutputAudioStreamManager } from "../../../WebRtc/AudioStream/ScriptingOutputAudioStreamManager";
 import { ScriptingInputAudioStreamManager } from "../../../WebRtc/AudioStream/ScriptingInputAudioStreamManager";
 import type { MessageUserJoined } from "../../../Connection/ConnexionModels";
@@ -466,9 +466,10 @@ export class ProximityChatRoom implements ChatRoom {
             }
             this.addNewMessage(event.spaceMessage.message, event.sender);
 
+            // Disabled auto-opening chat on new messages - let user open it manually
             // if the proximity chat is not open, open it to see the message
-            chatVisibilityStore.set(true);
-            if (get(selectedRoomStore) == undefined) selectedRoomStore.set(this);
+            // chatVisibilityStore.set(true);
+            // if (get(selectedRoomStore) == undefined) selectedRoomStore.set(this);
         });
 
         this.spaceIsTypingSubscription?.unsubscribe();
@@ -485,22 +486,23 @@ export class ProximityChatRoom implements ChatRoom {
 
         this.saveChatState();
 
-        const actualStatus = get(availabilityStatusStore);
-        if (!isAChatRoomIsVisible()) {
-            selectedRoomStore.set(this);
-            navChat.switchToChat();
-            if (
-                !get(requestedMicrophoneState) &&
-                !get(requestedCameraState) &&
-                (actualStatus === AvailabilityStatus.ONLINE || actualStatus === AvailabilityStatus.AWAY)
-            ) {
-                // If the user is not on the mobile, open the chat
-                // The user experience is disrupted by the chat on mobile
-                if (!isMediaBreakpointUp("md")) {
-                    chatVisibilityStore.set(true);
-                }
-            }
-        }
+        // Disabled auto-opening proximity chat - let user open it manually
+        // const actualStatus = get(availabilityStatusStore);
+        // if (!isAChatRoomIsVisible()) {
+        //     selectedRoomStore.set(this);
+        //     navChat.switchToChat();
+        //     if (
+        //         !get(requestedMicrophoneState) &&
+        //         !get(requestedCameraState) &&
+        //         (actualStatus === AvailabilityStatus.ONLINE || actualStatus === AvailabilityStatus.AWAY)
+        //     ) {
+        //         // If the user is not on the mobile, open the chat
+        //         // The user experience is disrupted by the chat on mobile
+        //         if (!isMediaBreakpointUp("md")) {
+        //             chatVisibilityStore.set(true);
+        //         }
+        //     }
+        // }
 
         // Let's wait for the users to be loaded
         let users: SpaceUserExtended[] = [];

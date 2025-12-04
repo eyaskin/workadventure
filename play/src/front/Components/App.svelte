@@ -9,6 +9,7 @@
     import { DEBUG_MODE, SENTRY_DSN_FRONT, SENTRY_ENVIRONMENT, SENTRY_RELEASE } from "../Enum/EnvironmentVariable";
     import { HdpiManager } from "../Phaser/Services/HdpiManager";
     import { EntryScene } from "../Phaser/Login/EntryScene";
+	import { IntroScene } from "../Phaser/Login/IntroScene";
     import { LoginScene } from "../Phaser/Login/LoginScene";
     import { SelectCharacterScene } from "../Phaser/Login/SelectCharacterScene";
     import { SelectCompanionScene } from "../Phaser/Login/SelectCompanionScene";
@@ -124,9 +125,10 @@
                 autoRound: true,
                 resizeInterval: 999999999999,
             },
-            scene: [
-                EntryScene,
-                LoginScene,
+			scene: [
+				EntryScene,
+				IntroScene,
+				LoginScene,
                 SelectCharacterScene,
                 SelectCompanionScene,
                 EnableCameraScene,

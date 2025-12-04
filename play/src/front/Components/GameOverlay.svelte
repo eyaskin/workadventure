@@ -34,6 +34,15 @@
     import MainModal from "./Modal/MainModal.svelte";
     import DroppingFileScene from "./DroppingFile/DroppingFileScene.svelte";
     import WokaScene from "./Woka/WokaScene.svelte";
+    import DemographicsModal from "./Modal/DemographicsModal.svelte";
+	import { introSceneVisibleStore } from "../Stores/IntroSceneStore";
+	import { insightStatStore } from "../Stores/InsightStatStore";
+	import IntroScene from "./Intro/IntroScene.svelte";
+	// Initialize default manager tasks
+	import { initManagerTasks } from "../Stores/ManagerTasks";
+	initManagerTasks();
+	import DialogueOverlay from "./Dialogue/DialogueOverlay.svelte";
+	import InsightStat from "./Dialogue/InsightStat.svelte";
 
     export let game: Game;
 
@@ -66,6 +75,10 @@
     <div class="bg-contrast">
         <ErrorDialog />
     </div>
+{:else if $introSceneVisibleStore}
+	<div class="h-dvh overflow-y-auto">
+		<IntroScene {game} />
+	</div>
 {:else if $loginSceneVisibleStore}
     <div class="h-dvh overflow-y-auto">
         <LoginScene {game} />
@@ -86,6 +99,8 @@
     {#if $refreshPromptStore}
         <RefreshPrompt />
     {/if}
+    <!-- Ask demographics once at the beginning of the session -->
+    <DemographicsModal />
     {#key $forceRefreshChatStore}
         <ChatSidebar />
         {#if $mapEditorModeStore}
@@ -98,6 +113,12 @@
         <MainLayout />
     {/key}
     <MainModal />
+	<DialogueOverlay />
+	{#if $insightStatStore}
+		<div class="fixed bottom-20 right-4 z-[1600]">
+			<InsightStat percent={$insightStatStore.percent} description={$insightStatStore.description} />
+		</div>
+	{/if}
 
     {#if $calendarIsActivatedStore && $isCalendarVisibleStore}
         <Calendar />
@@ -105,6 +126,14 @@
     {#if $todoListIsActivatedStore && $isTodoListVisibleStore}
         <TodoList />
     {/if}
+	{#if $todoListIsActivatedStore && !$isTodoListVisibleStore}
+		<button
+			class="fixed right-3 bottom-3 z-[450] bg-secondary text-white rounded px-3 py-2 shadow pointer-events-auto"
+			on:click={() => isTodoListVisibleStore.set(true)}
+		>
+			Tasks
+		</button>
+	{/if}
 {/if}
 
 <FloatingUiPopupList />
