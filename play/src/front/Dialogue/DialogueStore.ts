@@ -1,12 +1,11 @@
-import { writable } from "svelte/store";
-import { conversations, type Conversation, type DialogueNode } from "./Conversations";
+import { writable, get } from "svelte/store";
 import { increaseMotivation, decreaseMotivation } from "../Stores/MotivationStore";
 import { ENABLE_OPENAI_DIALOGUE } from "../Enum/EnvironmentVariable";
-import { get } from "svelte/store";
 import { demographicsStore } from "../Stores/DemographicsStore";
 import { completeManagerTask } from "../Stores/ManagerTasks";
 import { sendJitsiChatMessage } from "../WebRtc/JitsiChatBridge";
 import { showInsightStat } from "../Stores/InsightStatStore";
+import { conversations, type Conversation, type DialogueNode } from "./Conversations";
 
 export interface ActiveDialogue {
     npcName: string;
@@ -62,8 +61,7 @@ const firstEmployeeConversation = {
         },
         dei: {
             id: "dei",
-            npcLine:
-                "One more thing—using my correct name and pronouns matters a lot. It affects how included I feel.",
+            npcLine: "One more thing—using my correct name and pronouns matters a lot. It affects how included I feel.",
             choices: [
                 {
                     text: "Thanks for telling me. I'll model correct pronouns and fix mistakes",
@@ -159,7 +157,7 @@ export function choose(index: number) {
             completeManagerTask("Assess Motivation");
             assessMotivationCompleted = true;
         }
-        
+
         if (choice.motivationDelta > 0) increaseMotivation(choice.motivationDelta);
         else if (choice.motivationDelta < 0) decreaseMotivation(-choice.motivationDelta);
 
@@ -236,7 +234,10 @@ export function choose(index: number) {
 
     if (ENABLE_OPENAI_DIALOGUE) {
         // Build short history with last npc line and selected choice
-        const history = [{ speaker: "npc", text: node.npcLine }, { speaker: "player", text: choice.text }];
+        const history = [
+            { speaker: "npc", text: node.npcLine },
+            { speaker: "player", text: choice.text },
+        ];
         // Pass fallbackNextNodeId so if OpenAI is slow/unavailable we continue locally
         fetchOpenAiNode(npcName, history, choice.next).catch((e) => {
             console.warn(e);
@@ -329,11 +330,7 @@ async function fetchOpenAiNode(
         } catch {
             // ignore
         }
-        console.warn(
-            "[Dialogue] OpenAI dialogue disabled or error",
-            resp ? resp.status : "no response",
-            txt
-        );
+        console.warn("[Dialogue] OpenAI dialogue disabled or error", resp ? resp.status : "no response", txt);
         // fallback to scripted path
         const convo: Conversation | undefined = conversations[npcName];
         if (!convo) return;
@@ -375,9 +372,8 @@ function handleDialogueKeydown(e: KeyboardEvent) {
 }
 
 if (typeof window !== "undefined") {
+    // eslint-disable-next-line listeners/no-missing-remove-event-listener
     window.addEventListener("keydown", handleDialogueKeydown);
-    // Note: In a real cleanup scenario, you'd remove this listener, but for a global dialogue handler
-    // that persists for the app lifetime, leaving it attached is acceptable
+    // Note: This is a global dialogue handler that persists for the app lifetime.
+    // No cleanup needed as the listener remains active throughout the application.
 }
-
-

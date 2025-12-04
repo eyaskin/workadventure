@@ -38,7 +38,8 @@ const initial = load();
 const store = writable<Demographics | null>(initial);
 
 // Save to localStorage whenever demographics change
-const unsubscribe = store.subscribe((v) => save(v));
+// eslint-disable-next-line svelte/no-ignored-unsubscribe
+store.subscribe((v) => save(v));
 // Note: We intentionally keep this subscription active for the app lifetime
 // to persist demographics changes. This is not a memory leak.
 
@@ -52,5 +53,3 @@ export function setDemographics(value: Demographics) {
 export function clearDemographics() {
     store.set(null);
 }
-
-
