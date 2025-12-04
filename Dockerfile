@@ -1,21 +1,21 @@
 ###############################################
 # 1. Build protobuf messages
 ###############################################
-FROM node:18-slim AS proto
-WORKDIR /app
-COPY messages/package*.json ./messages/
-COPY messages ./messages
-COPY libs ./libs
-RUN cd messages && npm install && npm run tag-version && npm run ts-proto
+FROM node:20-slim AS proto
+WORKDIR /app/messages
+COPY messages/package*.json ./
+COPY messages/protos ./protos
+RUN npm install
+RUN npm run ts-proto
 
 ###############################################
 # 2. Build PLAY (front-end)
 ###############################################
-FROM node:18-slim AS play
+FROM node:20-slim AS play
 WORKDIR /app
 COPY package*.json ./
-COPY play ./play
 COPY libs ./libs
+COPY play ./play
 RUN npm install
 RUN npm --prefix play install
 RUN npm --prefix play run build
@@ -23,28 +23,31 @@ RUN npm --prefix play run build
 ###############################################
 # 3. Build BACK (server)
 ###############################################
-FROM node:18-slim AS back
+FROM node:20-slim AS back
 WORKDIR /app
 COPY package*.json ./
-COPY back ./back
 COPY libs ./libs
-COPY --from=proto /app/messages/src ./libs/messages/src
-COPY --from=proto /app/messages/generated ./back/src/Messages/generated
+COPY back ./back
+
+# Copy protobuf generated files into back service
+COPY --from=proto /app/messages/ts-proto-generated ./libs/messages/ts-proto-generated
+COPY --from=proto /app/messages/generated ./libs/messages/generated
+
 RUN npm install
 RUN npm --prefix back install
 RUN npm --prefix back run build
 
 ###############################################
-# 4. Final image (serve front + run back)
+# 4. Final runtime image
 ###############################################
-FROM node:18-slim
+FROM node:20-slim
 WORKDIR /app
 
-# Copy built assets
+# Copy built artifacts
 COPY --from=play /app/play/dist ./public
 COPY --from=back /app/back/dist ./dist
 
-# Install only runtime deps
+# Install only runtime dependencies
 COPY package*.json ./
 RUN npm install --omit=dev
 
