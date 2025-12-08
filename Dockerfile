@@ -23,8 +23,8 @@ COPY back ./back
 COPY messages/ts-proto-generated ./libs/messages/ts-proto-generated
 COPY messages/generated ./libs/messages/generated
 
-RUN npm install
-RUN npm --prefix back install
+RUN npm install --omit=dev
+RUN npm --prefix back install --omit=dev
 RUN npm --prefix back run build
 
 ###############################################
