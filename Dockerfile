@@ -1,31 +1,33 @@
 ###############################################
+# Base step — install ALL workspaces properly
+###############################################
+FROM node:20-slim AS base
+WORKDIR /app
+
+# Copy entire monorepo BEFORE npm install (critical for workspaces!)
+COPY . .
+
+# Install dependencies for ALL workspaces
+RUN npm install --omit=dev
+
+
+###############################################
 # Build PLAY (front-end)
 ###############################################
-FROM node:20-slim AS play
+FROM base AS play
 WORKDIR /app
-COPY package*.json ./
-COPY libs ./libs
-COPY play ./play
-RUN npm install
-RUN npm --prefix play install
+
 RUN npm --prefix play run build
+
 
 ###############################################
 # Build BACK (server)
 ###############################################
-FROM node:20-slim AS back
+FROM base AS back
 WORKDIR /app
-COPY package*.json ./
-COPY libs ./libs
-COPY back ./back
 
-# Copy PREGENERATED protobuf files
-COPY messages/ts-proto-generated ./libs/messages/ts-proto-generated
-COPY messages/generated ./libs/messages/generated
-
-RUN npm install --omit=dev
-RUN npm --prefix back install --omit=dev
 RUN npm --prefix back run build
+
 
 ###############################################
 # Final runtime image
@@ -33,9 +35,11 @@ RUN npm --prefix back run build
 FROM node:20-slim
 WORKDIR /app
 
+# Copy built artifacts
 COPY --from=play /app/play/dist ./public
 COPY --from=back /app/back/dist ./dist
 
+# Copy root package.json for runtime deps only
 COPY package*.json ./
 RUN npm install --omit=dev
 
